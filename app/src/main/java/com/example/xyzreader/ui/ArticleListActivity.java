@@ -7,7 +7,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -43,12 +46,13 @@ public class ArticleListActivity extends AppCompatActivity implements
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
+    private CoordinatorLayout coordinatorLayout;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
+    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +60,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_article_list);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
         final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
@@ -70,8 +74,20 @@ public class ArticleListActivity extends AppCompatActivity implements
         }
     }
 
+    public static boolean hasInternetConnection(Context context) {
+        ConnectivityManager connectivityManager = ((ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE));
+
+        return connectivityManager != null &&
+                connectivityManager.getActiveNetworkInfo() != null &&
+                connectivityManager.getActiveNetworkInfo().isConnected();
+    }
+
     private void refresh() {
-        startService(new Intent(this, UpdaterService.class));
+        if (!hasInternetConnection(getApplicationContext()))
+            Snackbar.make(coordinatorLayout, R.string.no_internet, Snackbar.LENGTH_SHORT);
+        else
+            startService(new Intent(this, UpdaterService.class));
     }
 
     @Override
@@ -179,8 +195,8 @@ public class ArticleListActivity extends AppCompatActivity implements
             } else {
                 holder.subtitleView.setText(Html.fromHtml(
                         outputFormat.format(publishedDate)
-                        + "<br/>" + " by "
-                        + mCursor.getString(ArticleLoader.Query.AUTHOR)));
+                                + "<br/>" + " by "
+                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
             }
             holder.thumbnailView.setImageUrl(
                     mCursor.getString(ArticleLoader.Query.THUMB_URL),
