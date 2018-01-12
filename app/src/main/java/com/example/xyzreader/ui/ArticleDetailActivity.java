@@ -114,7 +114,14 @@ public class ArticleDetailActivity extends AppCompatActivity
         @Override
         public Fragment getItem(int position) {
             mCursor.moveToPosition(position);
-            return ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
+            Bundle bundle = new Bundle();
+            bundle.putLong(ItemsContract.Items._ID, mCursor.getLong(ArticleLoader.Query._ID));
+            bundle.putString(ItemsContract.Items.TITLE, mCursor.getString(ArticleLoader.Query.TITLE));
+            bundle.putString(ItemsContract.Items.PUBLISHED_DATE, mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE));
+            bundle.putString(ItemsContract.Items.AUTHOR, mCursor.getString(ArticleLoader.Query.AUTHOR));
+            bundle.putString(ItemsContract.Items.BODY, mCursor.getString(ArticleLoader.Query.BODY));
+            bundle.putString(ItemsContract.Items.PHOTO_URL, mCursor.getString(ArticleLoader.Query.PHOTO_URL));
+            return ArticleDetailFragment.newInstance(bundle);
         }
 
         @Override
